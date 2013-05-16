@@ -1,5 +1,8 @@
 
 var mykey = {
+    public: null,
+    private: null,
+
     save: function () {
         var pub = ge('-mykey-public').value,
             pvt = ge('-mykey-private').value;
@@ -32,19 +35,21 @@ var mykey = {
             storage.set({mykey: {
                 public: pub.value,
                 private: pvt.value
-            }}, function () {
-            });
+            }});
         });
     },
 
     refreshKeys: function () {
         getOrCreate('mykey', function (mykey) {
+            this.public = mykey.public;
+            this.private = mykey.private;
+
             var pub = ge('-mykey-public'),
                 pvt = ge('-mykey-private');
 
-            pub.value = mykey['public'] ? mykey['public'] : '';
-            pvt.value = mykey['private'] ? mykey['private'] : '';
-        })
+            pub.value = this.public ? this.public : '';
+            pvt.value = this.private ? this.private : '';
+        }.bind(this));
     }
 };
 
