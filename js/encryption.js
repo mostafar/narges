@@ -85,6 +85,6 @@ Encryption.prototype = {
 
         this.rsaDecrypt(encryptedSessionKey, this.privateKey, function (sessionKey) {
             callback(this.aesDecrypt(encryptedMessage, sessionKey));
-        });
+        }.bind(this));
     }
 };
