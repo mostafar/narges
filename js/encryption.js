@@ -1,5 +1,12 @@
 
-var enc = {
+function Encryption(publicKey, privateKey) {
+    this.publicKey = publicKey;
+    this.privateKey = privateKey;
+}
+
+Encryption.prototype = {
+    splitter: '###',
+
     aesEncrypt: function (plain, key) {
         return CryptoJS.AES.encrypt(plain, key);
     },
@@ -8,11 +15,29 @@ var enc = {
         return CryptoJS.AES.decrypt(encrypted, key).toString(CryptoJS.enc.Utf8);
     },
 
+    _createRSA: function () {
+        var rsa = new RSA();
+//        rsa.messageFormat = RSAMessageFormatSOAEP;
+        rsa.messageFormat = RSAMessageFormatBitPadding;
+        return rsa;
+    },
+
+    _publicCheckEncryption: function (rsa, message) {
+		var maxsize= rsa.publicEncryptMaxSize();
+		var size = str2utf8(message).length;
+
+		if ( maxsize < size ) {
+		    alert("text length (" + size + ") exceeds the maximum length(" + maxsize + ") for this RSA key");
+		    return false;
+		}
+		return true;
+    },
+
     rsaEncrypt: function (plain, publicKey) {
-        var rsa = home._createRSA();
+        var rsa = this._createRSA();
         rsa.publicKeyBytes(base64x_decode(publicKey));
 
-        if (!home.publicCheckEncryption(rsa, plain)) {
+        if (!this._publicCheckEncryption(rsa, plain)) {
             throw 'Bad key or plain text given.';
         }
 
@@ -27,14 +52,13 @@ var enc = {
     },
 
     rsaDecrypt: function (encrypted, privateKey, callback) {
-        var rsa = home._createRSA();
+        var rsa = this._createRSA();
         rsa.privateKeyBytes(base64x_decode(privateKey));
 
         try {
             rsa.privateDecryptAsync(encrypted, function (c) {
                 // Progress
             }, function (result) {
-                console.warn(result);
                 callback(utf82str(result));
             }, function () {
                 // Done
@@ -44,30 +68,23 @@ var enc = {
         }
     },
 
-    splitter: '###',
-
-    encrypt: function (plain, publicKey) {
+    encrypt: function (plain) {
         var randomString = function () {return Math.random().toString(36).substring(2);};
         var sessionKey = randomString() + randomString();
 
-        console.warn('Session key: ', sessionKey);
+        var encryptedSessionKey = this.rsaEncrypt(sessionKey, this.publicKey);
+        var encryptedMessage = this.aesEncrypt(plain, sessionKey);
 
-        var encryptedSessionKey = enc.rsaEncrypt(sessionKey, publicKey);
-        var encryptedMessage = enc.aesEncrypt(plain, sessionKey);
-
-        return encryptedSessionKey + enc.splitter + encryptedMessage;
+        return encryptedSessionKey + this.splitter + encryptedMessage;
     },
 
-    decrypt: function (encrypted, privateKey, callback) {
-        var splitterPosition = encrypted.search(enc.splitter);
+    decrypt: function (encrypted, callback) {
+        var splitterPosition = encrypted.search(this.splitter);
         var encryptedSessionKey = encrypted.substring(0, splitterPosition);
-        var encryptedMessage = encrypted.substring(splitterPosition + enc.splitter.length)
+        var encryptedMessage = encrypted.substring(splitterPosition + this.splitter.length)
 
-        console.warn(encryptedSessionKey, encryptedMessage);
-
-        enc.rsaDecrypt(encryptedSessionKey, privateKey, function (sessionKey) {
-            console.warn('Session key: ', sessionKey);
-            callback(enc.aesDecrypt(encryptedMessage, sessionKey));
+        this.rsaDecrypt(encryptedSessionKey, this.privateKey, function (sessionKey) {
+            callback(this.aesDecrypt(encryptedMessage, sessionKey));
         });
     }
 };
