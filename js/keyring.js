@@ -62,7 +62,7 @@ var keyring = {
     },
 
     selectFriend: function () {
-        var selectedFriend = keyring.getSelectedFriend();
+        var selectedFriend = this.getSelectedFriend();
 
         if (selectedFriend) {
             getOrCreate('friends', function (friends) {
@@ -79,6 +79,7 @@ onLoadTasks.push(function () {
     bindEventByID('-btn-friend-save', 'click', keyring.saveFriend);
     bindEventByID('-btn-friend-remove', 'click', keyring.removeFriend);
     bindEventByID('-friends-list', 'change', keyring.selectFriend);
+
     chrome.storage.onChanged.addListener(function(changes, areaName) {
         keyring.refreshList();
     });
