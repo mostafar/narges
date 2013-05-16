@@ -1,36 +1,5 @@
 var onLoadTasks = [];  // List of functions, call all of them on DOM load
 
-var PopupController = function () {
-    this.save_button = document.getElementById('save');
-    this.load_button = document.getElementById('load');
-    this.textbox = document.getElementById('data');
-
-    this.init();
-};
-
-PopupController.prototype = {
-    save_button: null,
-    load_button: null,
-    textbox: null,
-
-    init: function () {
-        this.save_button.addEventListener('click', this.save.bind(this));
-        this.load_button.addEventListener('click', this.load.bind(this));
-    },
-
-    save: function () {
-        chrome.storage.local.set({'user_data': this.textbox.value}, function () {
-            this.textbox.value = 'Saved :)';
-        }.bind(this));
-    },
-
-    load: function () {
-        chrome.storage.local.get('user_data', function (items) {
-            this.textbox.value = items.user_data;
-        }.bind(this));
-    }
-};
-
 function changePage(page) {
     var pages = ['home', 'keyring', 'mykey'];
 
