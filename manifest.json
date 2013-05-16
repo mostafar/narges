@@ -1,0 +1,15 @@
+{
+    "name": "Narges",
+    "version": "0.1",
+    "description": "Web Encryption",
+    "permissions": [
+        "idle",
+        "storage"
+    ],
+    "browser_action": {
+    },
+    "options_page": "options.html",
+    "icons": {
+    },
+    "manifest_version": 2
+}

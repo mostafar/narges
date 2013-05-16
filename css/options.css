@@ -1,0 +1,12 @@
+body {
+    padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+}
+
+.-key-box {
+    min-height: 150px;
+}
+
+.-my-key-box {
+    width: 80%;
+    min-height: 150px;
+}
