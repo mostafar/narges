@@ -1,56 +1,45 @@
 
-var keyring = {
+function KeyRing () {
+}
+
+KeyRing.prototype = {
+    friends: {},
+
     saveFriend: function () {
-        email = ge('-friend-email').value;
-        key = ge('-friend-key').value;
+        var email = ge('-friend-email').value,
+            key = ge('-friend-key').value;
 
         if (!email || !key) {
             alert('Bad email and/or key entered.');
             return;
         }
 
-        getOrCreate('friends', function (friends) {
-            friends[email] = {
-                email: email,
-                key: key
-            }
+        console.warn(this.friends);
 
-            storage.set({friends: friends}, function () {
-            })
-        });
+        this.friends[email] = {
+            email: email,
+            key: key
+        };
+
+        this.save();
     },
 
     removeFriend: function () {
-        email = ge('-friend-email').value;
+        var email = ge('-friend-email').value;
 
         if (!email) {
             alert('Bad email entered.');
             return;
         }
 
-        getOrCreate('friends', function (friends) {
-            if (friends[email] === undefined) {
-                alert('Friend not found.');
-                return;
-            }
+        if (this.friends[email] === undefined) {
+            alert('Friend not found.');
+            return;
+        }
 
-            delete friends[email];
-            storage.set({friends: friends}, function () {
-            })
-        });
-    },
+        delete this.friends[email];
 
-    refreshList: function () {
-        var list = ge('-friends-list');
-
-        list.innerHTML = '';
-        getOrCreate('friends', function (friends) {
-            _.each(friends, function (friend) {
-                option = document.createElement('option');
-                option.innerHTML = friend.email;
-                list.appendChild(option);
-            })
-        });
+        this.save();
     },
 
     getSelectedFriend: function () {
@@ -65,24 +54,49 @@ var keyring = {
         var selectedFriend = this.getSelectedFriend();
 
         if (selectedFriend) {
-            getOrCreate('friends', function (friends) {
-                var friend = friends[selectedFriend.innerHTML];
+            var friend = this.friends[selectedFriend.innerHTML];
 
-                ge('-friend-email').value = friend.email;
-                ge('-friend-key').value = friend.key;
-            });
+            ge('-friend-email').value = friend.email;
+            ge('-friend-key').value = friend.key;
         }
-    }
-}
+    },
 
-onLoadTasks.push(function () {
-    bindEventByID('-btn-friend-save', 'click', keyring.saveFriend);
-    bindEventByID('-btn-friend-remove', 'click', keyring.removeFriend);
-    bindEventByID('-friends-list', 'change', keyring.selectFriend);
+    refreshList: function () {
+        this.load(function () {
+            var list = ge('-friends-list');
 
-    chrome.storage.onChanged.addListener(function(changes, areaName) {
+            list.innerHTML = '';
+            _.each(this.friends, function (friend) {
+                option = document.createElement('option');
+                option.innerHTML = friend.email;
+                list.appendChild(option);
+            })
+        }.bind(this));
+    },
+
+    load: function (callback) {
+        getOrCreate('friends', function (friends) {
+            this.friends = friends ? friends : {};
+            callback();
+        }.bind(this));
+    },
+
+    save: function () {
+        storage.set({friends: this.friends}, function () {
+        })
+    },
+
+    bindButtonsEvents: function () {
+        bindEventByID('-btn-friend-save', 'click', keyring.saveFriend.bind(this));
+        bindEventByID('-btn-friend-remove', 'click', keyring.removeFriend.bind(this));
+        bindEventByID('-friends-list', 'change', keyring.selectFriend.bind(this));
+    },
+
+    bindDataEvents: function () {
+        chrome.storage.onChanged.addListener(function(changes, areaName) {
+            keyring.refreshList();
+        });
+
         keyring.refreshList();
-    });
-
-    keyring.refreshList();
-});
+    }
+};
