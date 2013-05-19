@@ -1,5 +1,9 @@
 
-function KeyRing () {
+function KeyRing (bindUI) {
+    if (bindUI === undefined || bindUI) {
+        this.bindButtonsEvents();
+    }
+    this.bindDataEvents();
 }
 
 KeyRing.prototype = {
