@@ -1,8 +1,9 @@
-var onLoadTasks = [];  // List of functions, call all of them on DOM load
-var keyring = null;
+var onLoadTasks = [],  // List of functions, call all of them on DOM load
+    keyring = null,
+    mykeys = null;
 
 function changePage(page) {
-    var pages = ['home', 'keyring', 'mykey'];
+    var pages = ['home', 'keyring', 'mykeys'];
 
     for (var i = 0; i < pages.length; i++) {
         document.getElementById(pages[i] + 'Page').style.display = (pages[i] == page) ? 'block' : 'none';
@@ -11,12 +12,11 @@ function changePage(page) {
 
 onLoadTasks.push(function () {
     keyring = new KeyRing();
-    keyring.bindButtonsEvents();
-    keyring.bindDataEvents();
+    mykeys = new MyKeys();
 
     document.getElementById('-sidebar-home').addEventListener('click', function () {changePage('home');});
     document.getElementById('-sidebar-keyring').addEventListener('click', function () {changePage('keyring');});
-    document.getElementById('-sidebar-mykey').addEventListener('click', function () {changePage('mykey');});
+    document.getElementById('-sidebar-mykeys').addEventListener('click', function () {changePage('mykeys');});
 });
 
 document.addEventListener('DOMContentLoaded', function () {
